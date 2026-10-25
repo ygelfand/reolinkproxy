@@ -10,7 +10,7 @@ import (
 	"github.com/bluenviron/gortsplib/v5/pkg/description"
 	gformat "github.com/bluenviron/gortsplib/v5/pkg/format"
 	"github.com/pion/rtp"
-	"github.com/shareed2k/reolinkproxy/pkg/codec"
+	"github.com/ygelfand/reolinkproxy/pkg/codec"
 )
 
 type rtspTalkInput struct {

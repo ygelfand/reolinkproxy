@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/shareed2k/reolinkproxy/pkg/baichuan"
+	"github.com/ygelfand/reolinkproxy/pkg/baichuan"
 )
 
 // ONVIF Recording (ver10/recording) and Search (ver10/search) services backed

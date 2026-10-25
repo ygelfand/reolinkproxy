@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/shareed2k/reolinkproxy/pkg/baichuan"
+	"github.com/ygelfand/reolinkproxy/pkg/baichuan"
 )
 
 // ONVIF PTZ service (ver20/ptz/wsdl) backed by Baichuan PTZ commands (issue #23).

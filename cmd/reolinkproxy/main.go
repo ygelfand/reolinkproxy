@@ -22,8 +22,8 @@ import (
 	"github.com/bluenviron/gortsplib/v5/pkg/format/rtph265"
 	"github.com/pion/rtp"
 
-	"github.com/shareed2k/reolinkproxy/pkg/baichuan"
-	"github.com/shareed2k/reolinkproxy/pkg/media"
+	"github.com/ygelfand/reolinkproxy/pkg/baichuan"
+	"github.com/ygelfand/reolinkproxy/pkg/media"
 )
 
 var (

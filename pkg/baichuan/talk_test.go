@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"testing"
 
-	"github.com/shareed2k/reolinkproxy/pkg/codec"
+	"github.com/ygelfand/reolinkproxy/pkg/codec"
 )
 
 func TestDefaultTalkConfigSelectsADPCMProfile(t *testing.T) {

@@ -14,8 +14,8 @@ import (
 	"github.com/bluenviron/mediacommon/v2/pkg/codecs/mpeg4audio"
 	"github.com/pion/rtp"
 
-	"github.com/shareed2k/reolinkproxy/pkg/baichuan"
-	"github.com/shareed2k/reolinkproxy/pkg/media"
+	"github.com/ygelfand/reolinkproxy/pkg/baichuan"
+	"github.com/ygelfand/reolinkproxy/pkg/media"
 )
 
 func TestReorderH265NALsForAccessUnit(t *testing.T) {

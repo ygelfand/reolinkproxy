@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/shareed2k/reolinkproxy/pkg/baichuan"
+	"github.com/ygelfand/reolinkproxy/pkg/baichuan"
 )
 
 // Home Assistant MQTT discovery for camera entities (issue #25). All entities

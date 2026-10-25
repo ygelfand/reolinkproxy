@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/shareed2k/reolinkproxy/pkg/baichuan"
+	"github.com/ygelfand/reolinkproxy/pkg/baichuan"
 )
 
 func doSearch(t *testing.T, s *onvifServer, path, action, body string) *httptest.ResponseRecorder {

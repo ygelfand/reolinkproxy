@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shareed2k/reolinkproxy/pkg/baichuan"
+	"github.com/ygelfand/reolinkproxy/pkg/baichuan"
 )
 
 // ONVIF Imaging service (ver20/imaging/wsdl) backed by the Baichuan picture

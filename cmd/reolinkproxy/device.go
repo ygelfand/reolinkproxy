@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/shareed2k/reolinkproxy/pkg/baichuan"
+	"github.com/ygelfand/reolinkproxy/pkg/baichuan"
 )
 
 type CameraDevice struct {

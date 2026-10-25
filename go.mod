@@ -1,4 +1,4 @@
-module github.com/shareed2k/reolinkproxy
+module github.com/ygelfand/reolinkproxy
 
 go 1.26
 

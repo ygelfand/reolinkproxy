@@ -16,8 +16,8 @@ import (
 	"github.com/bluenviron/gortsplib/v5/pkg/format/rtpmpeg4audio"
 	"github.com/bluenviron/mediacommon/v2/pkg/codecs/mpeg4audio"
 	"github.com/pion/rtp"
-	"github.com/shareed2k/reolinkproxy/pkg/codec"
-	"github.com/shareed2k/reolinkproxy/pkg/media"
+	"github.com/ygelfand/reolinkproxy/pkg/codec"
+	"github.com/ygelfand/reolinkproxy/pkg/media"
 )
 
 type rtspServerHandler struct {

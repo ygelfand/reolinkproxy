@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shareed2k/reolinkproxy/pkg/baichuan"
+	"github.com/ygelfand/reolinkproxy/pkg/baichuan"
 )
 
 const snapshotTimeout = 10 * time.Second
