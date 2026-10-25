@@ -29,6 +29,7 @@ type AlarmMessage struct {
 // visitor).
 type MotionEvent struct {
 	Active  bool
+	States  []string
 	AITypes []string
 }
 
@@ -104,18 +105,21 @@ func parseMotionState(xmlText string, channel uint8) (MotionEvent, bool, error) 
 			continue
 		}
 
-		event := MotionEvent{}
-		if ev.AIType != "" && ev.AIType != "none" {
-			for _, aiType := range strings.Split(ev.AIType, ",") {
-				aiType = strings.TrimSpace(aiType)
-				if aiType != "" && aiType != "none" {
-					event.AITypes = append(event.AITypes, aiType)
-				}
-			}
-		}
+		event := MotionEvent{States: alarmWords(ev.Status), AITypes: alarmWords(ev.AIType)}
 		event.Active = ev.Status != "none" || len(event.AITypes) > 0
 		return event, true, nil
 	}
 
 	return MotionEvent{}, false, nil
+}
+
+func alarmWords(field string) []string {
+	var out []string
+	for _, word := range strings.Split(field, ",") {
+		word = strings.TrimSpace(word)
+		if word != "" && word != "none" {
+			out = append(out, word)
+		}
+	}
+	return out
 }

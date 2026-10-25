@@ -72,3 +72,17 @@ func TestParseMotionStateAITypes(t *testing.T) {
 		t.Fatalf("AITypes = %v, want [people vehicle]", event.AITypes)
 	}
 }
+
+func TestParseMotionStateVisitor(t *testing.T) {
+	t.Parallel()
+
+	xmlText := `<?xml version="1.0" encoding="utf-8"?><body><AlarmEventList><AlarmEvent><channelId>0</channelId><status>MD,visitor</status><AItype>people</AItype></AlarmEvent></AlarmEventList></body>`
+
+	event, matched, err := parseMotionState(xmlText, 0)
+	if err != nil || !matched {
+		t.Fatalf("parseMotionState() = (%v, %v), want match", err, matched)
+	}
+	if len(event.States) != 2 || event.States[0] != "MD" || event.States[1] != "visitor" {
+		t.Fatalf("States = %v, want [MD visitor]", event.States)
+	}
+}
