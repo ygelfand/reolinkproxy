@@ -61,6 +61,13 @@ func Dial(ctx context.Context, cfg Config) (*Client, error) {
 	)
 
 	switch {
+	case cfg.UID != "":
+		transport, err = dialUIDLocal(ctx, cfg.UID, cfg.Host, cfg.Timeout)
+		if err != nil {
+			return nil, err
+		}
+		isUDP = true
+
 	case cfg.Host != "":
 		address := cfg.Host
 		if _, _, splitErr := net.SplitHostPort(address); splitErr != nil {
@@ -74,13 +81,6 @@ func Dial(ctx context.Context, cfg Config) (*Client, error) {
 			return nil, err
 		}
 		transport = conn
-
-	case cfg.UID != "":
-		transport, err = dialUIDLocal(ctx, cfg.UID, cfg.Timeout)
-		if err != nil {
-			return nil, err
-		}
-		isUDP = true
 
 	default:
 		return nil, fmt.Errorf("either host or uid must be set")
@@ -110,6 +110,15 @@ func (c *Client) readLoop() {
 		if err != nil {
 			c.shutdown(err)
 			return
+		}
+		if msg.Header.MsgID == msgIDUDPKeepAlive && len(msg.Payload) == 0 && len(msg.Extension) == 0 {
+			_ = c.writeRequest(request{
+				MsgID:      msgIDUDPKeepAlive,
+				ChannelID:  msg.Header.ChannelID,
+				StreamType: msg.Header.StreamType,
+				MsgNum:     msg.Header.MsgNum,
+				Class:      classModernWithOffset,
+			})
 		}
 
 		c.pendingMu.Lock()
