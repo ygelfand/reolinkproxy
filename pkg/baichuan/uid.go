@@ -43,7 +43,7 @@ type uidSession struct {
 	hasConsumed bool
 }
 
-func dialUIDLocal(ctx context.Context, uid string, timeout time.Duration) (*uidSession, error) {
+func dialUIDLocal(ctx context.Context, uid, host string, timeout time.Duration) (*uidSession, error) {
 	udpConn, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4zero, Port: 0})
 	if err != nil {
 		return nil, err
@@ -85,7 +85,15 @@ func dialUIDLocal(ctx context.Context, uid string, timeout time.Duration) (*uidS
 		return nil, err
 	}
 
-	broadcasts := ipv4Broadcasts()
+	targets := ipv4Broadcasts()
+	if host != "" {
+		direct, err := hostIPv4(ctx, host)
+		if err != nil {
+			udpConn.Close()
+			return nil, err
+		}
+		targets = append(targets, direct)
+	}
 	deadline := time.Now().Add(timeout)
 	nextSend := time.Time{}
 
@@ -100,7 +108,7 @@ func dialUIDLocal(ctx context.Context, uid string, timeout time.Duration) (*uidS
 		}
 
 		if nextSend.IsZero() || time.Now().After(nextSend) {
-			for _, ip := range broadcasts {
+			for _, ip := range targets {
 				for _, port := range []int{2015, 2018} {
 					_, _ = udpConn.WriteToUDP(discoveryPacket, &net.UDPAddr{IP: ip, Port: port})
 				}
@@ -419,6 +427,23 @@ func (s *uidSession) writeLoop() {
 			}
 		}
 	}
+}
+
+func hostIPv4(ctx context.Context, host string) (net.IP, error) {
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		host = h
+	}
+	if ip := net.ParseIP(host).To4(); ip != nil {
+		return ip, nil
+	}
+	ips, err := net.DefaultResolver.LookupIP(ctx, "ip4", host)
+	if err != nil {
+		return nil, err
+	}
+	if len(ips) == 0 {
+		return nil, fmt.Errorf("no ipv4 address for %s", host)
+	}
+	return ips[0].To4(), nil
 }
 
 func ipv4Broadcasts() []net.IP {
