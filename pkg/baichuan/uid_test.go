@@ -24,7 +24,7 @@ func TestUIDSession_ReadTimeout(t *testing.T) {
 		readQueue:   make(chan []byte, 128),
 		writeQueue:  make(chan []byte, 128),
 		closeCh:     make(chan struct{}),
-		sentPackets: make(map[uint32][]byte),
+		sentPackets: make(map[uint32]*sentPacket),
 		recvPackets: make(map[uint32][]byte),
 	}
 

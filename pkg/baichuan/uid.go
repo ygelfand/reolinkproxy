@@ -34,14 +34,27 @@ type uidSession struct {
 	readBuf bytes.Buffer
 
 	sentMu       sync.Mutex
-	sentPackets  map[uint32][]byte
+	sentPackets  map[uint32]*sentPacket
 	nextPacketID uint32
 
 	recvMu      sync.Mutex
 	recvPackets map[uint32][]byte
 	consumedID  uint32
 	hasConsumed bool
+	heard       uint64
 }
+
+type sentPacket struct {
+	data  []byte
+	at    time.Time
+	tries int
+}
+
+const (
+	udpResendAfter = time.Second
+	udpResendMost  = 3
+	udpAckEvery    = 10 * time.Second
+)
 
 func dialUIDLocal(ctx context.Context, uid, host string, timeout time.Duration) (*uidSession, error) {
 	udpConn, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4zero, Port: 0})
@@ -164,7 +177,7 @@ func dialUIDLocal(ctx context.Context, uid, host string, timeout time.Duration) 
 			readQueue:   make(chan []byte, 128),
 			writeQueue:  make(chan []byte, 128),
 			closeCh:     make(chan struct{}),
-			sentPackets: make(map[uint32][]byte),
+			sentPackets: make(map[uint32]*sentPacket),
 			recvPackets: make(map[uint32][]byte),
 		}
 		session.wg.Add(2)
@@ -339,6 +352,7 @@ func (s *uidSession) readLoop() {
 			if _, ok := s.recvPackets[pkt.PacketID]; !ok {
 				s.recvPackets[pkt.PacketID] = append([]byte(nil), pkt.Payload...)
 			}
+			s.heard++
 			chunks := contiguousPayloads(s.recvPackets, &s.consumedID, &s.hasConsumed)
 			s.recvMu.Unlock()
 
@@ -358,6 +372,11 @@ func (s *uidSession) writeLoop() {
 
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
+
+	var (
+		lastHeard uint64
+		lastAck   time.Time
+	)
 
 	for {
 		select {
@@ -395,22 +414,34 @@ func (s *uidSession) writeLoop() {
 			}
 
 			s.sentMu.Lock()
-			s.sentPackets[packetID] = packet
+			s.sentPackets[packetID] = &sentPacket{data: packet, at: time.Now()}
 			s.sentMu.Unlock()
 
-		case <-ticker.C:
+		case now := <-ticker.C:
 			s.sentMu.Lock()
-			for _, packet := range s.sentPackets {
-				_, _ = s.conn.WriteToUDP(packet, s.remoteAddr)
+			for packetID, sent := range s.sentPackets {
+				if now.Sub(sent.at) < udpResendAfter {
+					continue
+				}
+				if sent.tries >= udpResendMost {
+					s.sentMu.Unlock()
+					s.shutdown(fmt.Errorf("udp packet %d never acknowledged", packetID))
+					return
+				}
+				sent.tries++
+				sent.at = now
+				_, _ = s.conn.WriteToUDP(sent.data, s.remoteAddr)
 			}
 			s.sentMu.Unlock()
 
 			s.recvMu.Lock()
+			heard := s.heard
 			start, payload, ok := ackWindow(s.recvPackets, s.consumedID, s.hasConsumed)
 			s.recvMu.Unlock()
-			if !ok {
+			if !ok || (heard == lastHeard && now.Sub(lastAck) < udpAckEvery) {
 				continue
 			}
+			lastHeard, lastAck = heard, now
 
 			packet, err := marshalUDPPacket(udpAckPacket{
 				ConnectionID: s.cameraID,
